@@ -287,7 +287,7 @@ if __name__ == "__main__":
         print(f"Risk Levels: {output.get('risk_levels')}")
         print(f"Justification: {output.get('justifications')}")
 
-        print("### Message History ###")
+        print("\n### Message History ###\n")
 
         # Print the entire conversation
         messages = output.get("messages", [])
