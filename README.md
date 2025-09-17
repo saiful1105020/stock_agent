@@ -1,6 +1,7 @@
 conda create --name langgraph python=3.11
-git clone https://github.com/saiful1105020/stock_agent.git
+conda activate langgraph
 
+git clone https://github.com/saiful1105020/stock_agent.git
 cd [git folder]
 
 pip install -r requirements.txt
