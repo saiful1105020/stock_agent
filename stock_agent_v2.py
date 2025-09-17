@@ -2,16 +2,15 @@
 A more complex agent that uses a state graph to manage conversation state and provide stock investment advice.
 Improvements over stock_agent_v1.py:
 - Uses a state graph to manage conversation flow.
+- Provides final structured output at the end.
+- Visualizes the state graph and saves it as a PNG file.
 """
 import os
 import getpass
-import pprint
 
 # from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
-from langgraph.graph import MessagesState
 from langgraph.graph import StateGraph, START, END
-from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from typing_extensions import TypedDict

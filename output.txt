@@ -1,0 +1,6 @@
+
+Final Structured Output:
+List of Companies: ['Apple (AAPL) or Microsoft (MSFT) - Fractional Shares', 'Vanguard Total Stock Market ETF (VTI) or SPDR S&P 500 ETF Trust (SPY)', 'Procter & Gamble (PG) - Fractional Shares', 'Plug Power (PLUG)']
+Amounts to Invest: [30.0, 30.0, 20.0, 20.0]
+Risk Levels: ['Medium', 'Low', 'Medium', 'High']
+Justification: With a $100 budget, investing in fractional shares allows for exposure to well-established tech companies like Apple or Microsoft, while an ETF such as VTI or SPY offers broad market exposure and diversification. A dividend stock like Procter & Gamble provides potential income, and an emerging growth stock like Plug Power offers high-risk, high-reward potential. This mix aims to balance stability, income, and growth.
