@@ -1,3 +1,6 @@
+"""
+A simple script to extract naive LLM responses.
+"""
 import os
 import getpass
 import pprint

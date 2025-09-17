@@ -1,3 +1,8 @@
+"""
+A simple script to get stock investment advice using an LLM with structured output.
+Improvements over stock_agent_v0.py:
+- Uses structured output schema to get detailed investment advice.
+"""
 import os
 import getpass
 import pprint
