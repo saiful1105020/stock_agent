@@ -118,19 +118,23 @@ llm_with_tools = llm.bind_tools(tools)
 ### LLM Agent Nodes ###
 def initial_response(state: State):
     """Initial LLM node to greet the user."""
+    print("Preparing an initial investment plan")
     messages = state.get("messages", [])
     msg = structured_initial_llm.invoke(messages)
-    return {"list_of_companies":msg.list_of_companies, "messages": messages + [AIMessage(content=msg.summary+"\n"+",".join(msg.list_of_companies), id=SELF_THOUGHT)]}
+    msg_content = msg.summary+"\n"+",".join(msg.list_of_companies)
+    print(msg_content)
+    return {"list_of_companies":msg.list_of_companies, "messages": messages + [AIMessage(content=msg_content, id=EXPLICIT)]}
 
 def verify_companies(state: State):
     """LLM node to verify the list of companies using web search."""
+    print("Verifying the existence of the above-mentioned stocks")
     messages = state.get("messages", [])
     # Append a system message to instruct the LLM to verify the companies
     new_msg = SystemMessage(content="Verify the list of companies mentioned in the previous message. Use web search if needed. If any company is not valid, remove it from the list. Summarize this update.")
     messages.append(new_msg)
     msg = llm_with_tools.invoke(messages)
     messages.append(
-        AIMessage(content=msg.content, tool_calls=msg.tool_calls)
+        AIMessage(content=msg.content, tool_calls=msg.tool_calls, id=SELF_THOUGHT)
     )
 
     for call in msg.tool_calls:
@@ -145,13 +149,15 @@ def verify_companies(state: State):
             assert False, "Undefined tool calls"
 
     msg = structured_initial_llm.invoke(messages)
-    return {"list_of_companies":msg.list_of_companies, "messages": messages + [AIMessage(content=msg.summary+"\n"+",".join(msg.list_of_companies), id=EXPLICIT)]}
+    msg_content = msg.summary+"\n"+",".join(msg.list_of_companies)
+    print(msg_content)
+    return {"list_of_companies":msg.list_of_companies, "messages": messages + [AIMessage(content=msg_content, id=EXPLICIT)]}
 
 def collect_user_feedback(state: State):
     messages = list(state.get("messages", []))
     last_ai_message = messages[-1]
     if hasattr(last_ai_message, "content"):
-        value = interrupt({"question": last_ai_message.content})
+        value = interrupt({"question": "Do you have any questions or concerns?"})
     elif hasattr(last_ai_message, "question"):
         value = interrupt({"question": last_ai_message.response + "\n" + last_ai_message.question})
     
@@ -159,7 +165,9 @@ def collect_user_feedback(state: State):
     new_msg = SystemMessage(content="Do you want to ask follow-up question?")
     messages.append(new_msg)
     msg = follow_up_llm.invoke(messages)
-    return {"follow_up_required":msg.decision, "follow_up_question": msg.question, "messages": messages + [AIMessage(content=msg.response + "\n" + msg.question, id=EXPLICIT)]}
+    msg_content = msg.response + "\n" + msg.question
+    print(msg_content)
+    return {"follow_up_required":msg.decision, "follow_up_question": msg.question, "messages": messages + [AIMessage(content=msg_content, id=EXPLICIT)]}
 
 def followup_router(state: State):
     if state["follow_up_required"]:
@@ -171,34 +179,44 @@ def update_list_of_companies(state: State):
     """
     LLM node to redo the company listing based on user response
     """
+    print("Updating investment list based on user feedback.")
     messages = state.get("messages", [])
     new_msg = SystemMessage(content="Incorporate user input, and revise your recommended list of companies.")
     messages.append(new_msg)
     msg = structured_initial_llm.invoke(messages)
-    return {"messages": messages + [AIMessage(content=msg.summary+"\n"+",".join(msg.list_of_companies), id=EXPLICIT)]} 
+    msg_content = msg.summary+"\n"+",".join(msg.list_of_companies)
+    print(msg_content)
+    return {"messages": messages + [AIMessage(content=msg_content, id=EXPLICIT)]} 
 
 def assign_budget(state: State):
     """LLM node to acknowledge user's budget."""
+    print("Distributing budget across companies")
     messages = state.get("messages", [])
     new_msg = SystemMessage(content="Acknowledge the user's budget. Split the budget across the stocks you have recommended. Make sure the total is equal to the user's budget.")
     messages.append(new_msg)
     msg = llm.invoke(messages)
+    print(msg.content)
     return {"messages": messages + [AIMessage(content=msg.content, id=SELF_THOUGHT)]}
 
 def guardrail_check(state: State):
     """LLM node to ensure the response adheres to guardrails."""
+    print("Adding guardrails")
     messages = state.get("messages", [])
     new_msg = SystemMessage(content="Explicitly mention that you are not a financial advisor and this is not financial advice. Briefly clarify the risks involved in stock investments. Mention that the user should do their own research before making any investment decisions.")
     messages.append(new_msg)
     msg = llm.invoke(messages)
+    print(msg.content)
     return {"messages": messages + [AIMessage(content=msg.content, id=SELF_THOUGHT)]}
 
 def final_summary(state: State):
     """LLM node to provide a final summary of the investment advice."""
+    print("Preparing take-home summary and stock recommendation")
     messages = state.get("messages", [])
     new_msg = SystemMessage(content="Provide a final summary of the investment advice in a structured format, including the cautions.")
     messages.append(new_msg)
     msg = structured_llm.invoke(messages)
+    print(msg.summary)
+    print("END OF INTERACTION.")
     return {"list_of_companies": msg.list_of_companies, "amounts_to_invest": msg.amounts_to_invest, "risk_levels": msg.risk_levels, "justifications": msg.justification, "messages": messages + [AIMessage(content=str(msg.summary), id=EXPLICIT)]}
 
 def build_graph():
@@ -300,6 +318,7 @@ if __name__ == "__main__":
     # Print the conversation
     messages = output.get("messages", [])
     for msg in messages:
+        # print(msg.type)
         # Skip printing system messages and inner thoughts
-        if (msg.type != "system") and (int(msg.id or 0) != SELF_THOUGHT):
+        if not ((msg.type in ["system", "tool"]) or (int(msg.id or 0) == SELF_THOUGHT)):
             msg.pretty_print()
