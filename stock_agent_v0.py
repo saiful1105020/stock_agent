@@ -18,7 +18,6 @@ _set_env("OPENAI_API_KEY")
 if __name__ == "__main__":
     # llm = ChatAnthropic(model="claude-3-5-sonnet-latest")
     llm = ChatOpenAI(model="gpt-4o")
-
     query = "I have 100$ to invest. Which stocks should I buy?"
     output = llm.invoke(query)
     pprint.pprint(output.content)

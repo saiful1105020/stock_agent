@@ -76,7 +76,9 @@ def stock_recommender(state: State):
 def build_graph():
     """Builds the state graph for the stock recommendation agent."""
     builder = StateGraph(State)
+    
     builder.add_node("stock_recommender", stock_recommender)
+    
     builder.add_edge(START, "stock_recommender")
     builder.add_edge("stock_recommender", END)
     return builder.compile()
